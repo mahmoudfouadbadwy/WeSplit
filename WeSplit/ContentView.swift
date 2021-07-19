@@ -11,11 +11,13 @@ struct ContentView: View {
     
     @State private var checkAmount = ""
     @State private var numberOfPeople = 2
-    @State private var tipPercentage = 2
+    @State private var tipIndex = 2
+    
     private let tipPercentages = [10, 15, 20, 25, 0]
+    
     private var totalPerPerson: Double {
         let peopleCount  =  Double(numberOfPeople + 2)
-        let tipSelection =  Double(tipPercentages[tipPercentage])
+        let tipSelection =  Double(tipPercentages[tipIndex])
         let orderAmount  =  Double(checkAmount) ?? 0
         
         let tipValue = orderAmount / 100 * tipSelection
@@ -32,25 +34,29 @@ struct ContentView: View {
                     TextField("Amount", text: $checkAmount)
                         .keyboardType(.decimalPad)
                     
-                    Picker("Number Of People", selection: $numberOfPeople) {
-                        ForEach( 2 ..< 100) {
+                    Picker("Number Of People",
+                           selection: $numberOfPeople) {
+                        ForEach( 2 ..< 100 ) {
                             Text("\($0) People")
                         }
                     }
                 }
                 
                 Section(header: Text("How much tip do you want to leave ?")) {
-                    Picker("Tip Percentage", selection: $tipPercentage) {
+                    Picker("Tip Percentage",
+                           selection: $tipIndex) {
                         ForEach( 0..<tipPercentages.count ) {
                             Text("\(tipPercentages[$0]) %")
-                        }.pickerStyle(SegmentedPickerStyle())
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
                     }
                 }
                 
                 Section {
-                    Text("$ \(self.totalPerPerson, specifier: "%.2f")")
+                    Text("$ \(self.totalPerPerson, specifier: "%.2f")  for each person.")
                 }
-            }.navigationBarTitle("WeSplit")
+            }
+            .navigationBarTitle("WeSplit")
         }
     }
 }
