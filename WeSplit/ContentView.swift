@@ -11,51 +11,64 @@ struct ContentView: View {
     
     @State private var checkAmount = ""
     @State private var numberOfPeople = 0
-    @State private var tipIndex = 2
+    @State private var tipPercentage = 20
+    @FocusState private var amountIsFocused: Bool
     
-    private let tipPercentages = [10, 15, 20, 25, 0]
     private let startIndexForPeoplePicker = 2
     private var totalPerPerson: Double {
         let peopleCount  =  Double(numberOfPeople + startIndexForPeoplePicker)
-        let tipSelection =  Double(tipPercentages[tipIndex])
-        let orderAmount  =  Double(checkAmount) ?? 0
-        
-        let tipValue = orderAmount / 100 * tipSelection
-        let grandTotal = orderAmount + tipValue
-        let amountPerPerson = grandTotal / peopleCount
-        
+        let amountPerPerson = totalCheckAmount / peopleCount
         return amountPerPerson
+    }
+    private var totalCheckAmount: Double {
+        let orderAmount  =  Double(checkAmount) ?? 0
+        let tipSelection =  Double(tipPercentage)
+        let tipValue = orderAmount / 100 * tipSelection
+        return orderAmount + tipValue
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section {
-                    TextField("Check Amount", text: $checkAmount)
-                        .keyboardType(.decimalPad)
+                    TextField("Amount",
+                              text: $checkAmount)
+                    .keyboardType(.decimalPad)
+                    .focused($amountIsFocused)
                     
                     Picker("Number Of People",
                            selection: $numberOfPeople) {
                         ForEach( 2 ..< 100 ) {
                             Text("\($0) People")
                         }
-                    }
+                    }.pickerStyle(.navigationLink)
                 }
                 
-                Section(header: Text("How much tip do you want to leave ?")) {
+                Section("How much tip do you want to leave ?") {
                     Picker("Tip Percentage",
-                           selection: $tipIndex) {
-                        ForEach(0..<tipPercentages.count) {
-                            Text("\(tipPercentages[$0]) %")
+                           selection: $tipPercentage) {
+                        ForEach(0..<101, id: \.self) {
+                            Text($0, format: .percent)
                         }
-                    }.pickerStyle(SegmentedPickerStyle())
+                    }.pickerStyle(.navigationLink)
                 }
                 
-                Section {
-                    Text("$ \(self.totalPerPerson, specifier: "%.2f")  for each person.")
+                Section("Total Check Amount") {
+                    Text(totalCheckAmount, format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
+                }
+                
+                Section("Amount per person") {
+                    Text(totalPerPerson, format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
                 }
             }
             .navigationBarTitle("WeSplit")
+            .toolbar {
+                if amountIsFocused {
+                    Button("Done") {
+                        amountIsFocused = false
+                    }
+                }
+            }
         }
     }
 }
